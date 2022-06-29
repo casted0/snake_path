@@ -2,7 +2,7 @@
 # Function     : parse_input
 # Description  : This function parses data to test functionality as well as expected result
 # Arguments    : [string - filename]
-# Output       : Dict containing lists containing
+# Output       : List containing lists containing
 #                    map size,
 #                    snake coordinates,
 #                    depth,
@@ -28,12 +28,7 @@ def parse_input(filename):
     for line in data_file:
         # Split raw data with ":" separator
         line_parsed = line.split(":")
-        # Parse line and add it to list
-        
-        """print(line_parsed[0])
-        if len(line_parsed) > 1:
-            print(line_parsed[1])"""
-
+        # Parse line and add it to list, list of lists has to be parsed with json module
         if "board" in line_parsed[0]:
             # List parsed will be list of strings, map it to int
             line_parsed_to_list = json.loads(line_parsed[1])
@@ -55,7 +50,6 @@ def parse_input(filename):
         
         # Before end of iteration, if data_parsed size is 3 items, append it to list_parsed
         # and clear all values of data_parsed since it's a temp list
-        print(data_parsed)
         if len(data_parsed) == 4:
             list_parsed.append(data_parsed.copy())
             data_parsed.clear()
