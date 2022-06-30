@@ -11,28 +11,16 @@
 # --------------------------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------------------------------
-# Standard Library import
-# --------------------------------------------------------------------------------------------------
-
-import sys
-import os
-
-# --------------------------------------------------------------------------------------------------
-# Extra Library import
+# Module import
 # --------------------------------------------------------------------------------------------------
 
 from modules.parse_data import parse_input
 from modules.pretty_board import pretty_board
+from modules.tree_move import tree_move
 
 # --------------------------------------------------------------------------------------------------
 # Global variables
 # --------------------------------------------------------------------------------------------------
-
-# Variables that save operations for representing movements
-UP    = [-1, 0]
-DOWN  = [1, 0]
-LEFT  = [0, -1]
-RIGHT = [0, 1]
 
 # Color variables
 OKGREEN = '\033[92m'
@@ -41,48 +29,66 @@ FAIL = '\033[91m'
 ENDC = '\033[0m'
 
 # --------------------------------------------------------------------------------------------------
-# Auxiliar functions
-# --------------------------------------------------------------------------------------------------
-
-# This functions receives an input and with board size creates a map, then removes the
-# occupied cells finally adding the tail of the snake since its a valid position
-def procces_map(input):
-    map = []
-    for row in range(input[0][0]):
-        for column in range(input[0][1]):
-            map.append([row, column])
-
-    for cell in input[1]:
-        if cell in map:
-            map.remove(cell)
-    
-    map.append(input[1][len(input[1])-1])
-
-    return map
-
-def move_snake():
-    pass
-
-# --------------------------------------------------------------------------------------------------
 # Main routine
+# Description: Parses test cases, executes recursion to get paths and represent test results
 # --------------------------------------------------------------------------------------------------
 
 def main():
     
+    # Test data is located on resources folder
     inputs = parse_input("resources/test_data.dat")
     
-    for i in range(len(inputs)):
-        print("\n" + OKGREEN + "--- [INFO] Test Case parsed [" + str(i+1) + "] ---" + ENDC)
-        print("Board size: " + str(inputs[i][0]))
-        print("Snake: " + str(inputs[i][1]))
-        print("Depth: " + str(inputs[i][2]))
-        print("Expected result: " + str(inputs[i][3]))
+    # Loops around all test cases read on test_data
+    for i in range(3):
+
+        # Variable used for representing test number at the end of the main routine
+        test_count = i + 1
+
+        # Save variables parsed for better understanding
+        board_size = inputs[i][0]
+        snake      = inputs[i][1]
+        depth      = inputs[i][2]
+        expected_r = inputs[i][3]
+
+        # Tells user test cases have been parsed correctly and gives information
+        print("\n" + WARNING + "--- [INFO] Test Case parsed [" + str(i+1) + "] ---" + ENDC)
+        print("Board size: " + str(board_size))
+        print("Snake: " + str(snake))
+        print("Depth: " + str(depth))
+        print("Expected result: " + str(expected_r))
         print("Board state:")
-        pretty_board(inputs[i][0], inputs[i][1])
+        print("\n ----------------- INITIAL STATE ----------------- \n")
+        # This function is located at modules/pretty board and gives visual info about board and snake
+        pretty_board(board_size, snake)
+        print("\n ----------------- START EXECUTION ----------------- \n")
 
-    for input in inputs:
-        empty_map = procces_map(input)
+        # Moves are retrived as a long string, every x (depth) movement a new sequence is created and kept
+        string_of_moves = tree_move(board_size, snake, depth)
+        move = ""
+        list_of_moves = []
 
+        for i in range(len(string_of_moves)):
+            move = move + string_of_moves[i]
+            # When (depth) moves have been parsed a new move is appended to final list
+            if len(move) == depth:
+                list_of_moves.append(move)
+                move = ""
+
+        # Print list of moves to see final results
+        print("\nList of moves: ")
+        for move in list_of_moves:
+            print(move)
+
+        # Check number of results on each test for debuging issues
+        # If len of moves is different from expected output result is wrong
+        if len(list_of_moves) == int(expected_r):
+            print("\n" + OKGREEN + "--- [INFO] SUCCESS on Test case [" + str(test_count) + "] ---\n" + ENDC)
+            print("Calculated result: " + str(len(list_of_moves)))
+            print("Expected output: " + str(expected_r))
+        else:
+            print("\n" + FAIL + "--- [INFO] FAILURE on Test case [" + str(test_count) + "] ---\n" + ENDC)
+            print("Calculated result: " + str(len(list_of_moves)))
+            print("Expected output: " + str(expected_r))
 
 if __name__ == "__main__":
     main()
