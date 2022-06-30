@@ -70,25 +70,26 @@ class Tree:
     # Every new move in explore_leafs is store as a new tree since tree depth and width depends
     # on script parameters and not a limitation here in the class
     def append_move(self, move):
-        self.leafs.append(Tree(move))
+        new_leaf = Tree(move)
+        self.leafs.append(new_leaf)
+        return new_leaf
 
     # For debugging reasons this function does the same as return_tree but printing result in
     # standard output
     def show_tree(self, tree):
-        if tree.move is None: return
-        print(tree.move + " -> ", end="")
-        if len(tree.leafs) == 0: return
+        print("First move: " + str(tree.move))
+        print("Available moves: ")
         for leaf in tree.leafs:
-            tree.show_tree(leaf)
+            print(leaf.move, end="")
+        print()
 
     # This method uses recursion to retrieve 1. move in root -> 2. move in all leafs
     # Since leafs are also trees this will continue untill no more leafs are found
     def return_tree(self, tree):
-        if tree.move is None: return
+        #tree.show_tree(tree)
         moves = tree.move
-        if len(tree.leafs) == 0: return moves
         for leaf in tree.leafs:
-            moves = moves + tree.return_tree(leaf)
+            moves = moves + leaf.move + tree.return_tree(leaf)
         return moves
 
 # --------------------------------------------------------------------------------------------------
@@ -105,39 +106,50 @@ def explore_leafs(tree, depth, snake, board_size, empty_map):
 
     # Every recursive step depth is called sustracting 1, at last step this value will be 0
     if not depth:
-        return
+        return tree
+
+    move_UP = False
+    move_DOWN = False
+    move_LEFT = False
+    move_RIGHT = False
     
-    # For debugging reasons, get tree values and print board
-    #tree.show_tree(tree)
-    #pretty_board(board_size, snake)
 
     # This 4 ifs are the same, if any move is possible (cell is empty) append that move to 
     # main tree, update snake coordinates and board, and call recursion untill depth is 0
     # It's not necessary to return here explore_leafs since before recursion move is already
     # introduced in tree
     if [snake[0][0] + UP[0], snake[0][1] + UP[1]] in empty_map:
-        tree.append_move("U")
-        snake_UP = snake_after_move(snake, UP)
-        explore_leafs(tree, depth-1, snake_UP, board_size, update_map(board_size, snake_UP))
-        empty_map = update_map(board_size, snake_UP)
+        move_UP = True
 
     if [snake[0][0] + DOWN[0], snake[0][1] + DOWN[1]] in empty_map:
-        tree.append_move("D")
-        snake_DOWN = snake_after_move(snake, DOWN)
-        explore_leafs(tree, depth-1, snake_DOWN, board_size,  update_map(board_size, snake_DOWN))
-        empty_map = update_map(board_size, snake_DOWN)
+        move_DOWN = True
+        
         
     if [snake[0][0] + LEFT[0], snake[0][1] + LEFT[1]] in empty_map:
-        tree.append_move("L")
-        snake_LEFT = snake_after_move(snake, LEFT)
-        explore_leafs(tree, depth-1, snake_LEFT, board_size,  update_map(board_size, snake_LEFT))
-        empty_map = update_map(board_size, snake_LEFT)
+        move_LEFT = True
+        
 
     if [snake[0][0] + RIGHT[0], snake[0][1] + RIGHT[1]] in empty_map:
-        tree.append_move("R")
+        move_RIGHT = True
+    
+
+    if move_UP:
+        sub_tree = tree.append_move("U")
+        snake_UP = snake_after_move(snake, UP)
+        explore_leafs(sub_tree, depth-1, snake_UP, board_size, update_map(board_size, snake_UP))
+    if move_DOWN:
+        sub_tree = tree.append_move("D")
+        snake_DOWN = snake_after_move(snake, DOWN)
+        explore_leafs(sub_tree, depth-1, snake_DOWN, board_size,  update_map(board_size, snake_DOWN))
+    if move_LEFT:
+        sub_tree = tree.append_move("L")
+        snake_LEFT = snake_after_move(snake, LEFT)
+        explore_leafs(sub_tree, depth-1, snake_LEFT, board_size,  update_map(board_size, snake_LEFT))
+    if move_RIGHT:
+        sub_tree = tree.append_move("R")
         snake_RIGHT = snake_after_move(snake, RIGHT)
-        explore_leafs(tree, depth-1, snake_RIGHT, board_size,  update_map(board_size, snake_RIGHT))
-        empty_map = update_map(board_size, snake_RIGHT)
+        explore_leafs(sub_tree, depth-1, snake_RIGHT, board_size,  update_map(board_size, snake_RIGHT))
+
 
     # return tree that in main function will be translated to string of moves with class method
     return tree
@@ -167,26 +179,27 @@ def tree_move(board_size, snake, depth):
     if [snake[0][0] + UP[0], snake[0][1] + UP[1]] in empty_map:
         tree_UP  = Tree("U")
         snake_UP = snake_after_move(snake, UP)
-        moves_UP = tree_UP.return_tree(explore_leafs(tree_UP, depth, snake_UP, board_size, update_map(board_size, snake_UP)))
-        empty_map = update_map(board_size, snake_UP)
+        moves_UP = tree_UP.return_tree(explore_leafs(tree_UP, depth-1, snake_UP, board_size, update_map(board_size, snake_UP)))
+        #empty_map = update_map(board_size, snake_UP)
 
     if [snake[0][0] + DOWN[0], snake[0][1] + DOWN[1]] in empty_map:
         tree_DOWN  = Tree("D")
         snake_DOWN = snake_after_move(snake, DOWN)
-        moves_DOWN = tree_DOWN.return_tree(explore_leafs(tree_DOWN, depth, snake_DOWN, board_size,  update_map(board_size, snake_DOWN)))
-        empty_map = update_map(board_size, snake_DOWN)
+        moves_DOWN = tree_DOWN.return_tree(explore_leafs(tree_DOWN, depth-1, snake_DOWN, board_size,  update_map(board_size, snake_DOWN)))
+        #empty_map = update_map(board_size, snake_DOWN)
 
     if [snake[0][0] + LEFT[0], snake[0][1] + LEFT[1]] in empty_map:
         tree_LEFT  = Tree("L")
         snake_LEFT = snake_after_move(snake, LEFT)
-        moves_LEFT = tree_LEFT.return_tree(explore_leafs(tree_LEFT, depth, snake_LEFT, board_size,  update_map(board_size, snake_LEFT)))
-        empty_map = update_map(board_size, snake_LEFT)
+        moves_LEFT = tree_LEFT.return_tree(explore_leafs(tree_LEFT, depth-1, snake_LEFT, board_size,  update_map(board_size, snake_LEFT)))
+        #empty_map = update_map(board_size, snake_LEFT)
 
     if [snake[0][0] + RIGHT[0], snake[0][1] + RIGHT[1]] in empty_map:
         tree_RIGHT  = Tree("R")
         snake_RIGHT = snake_after_move(snake, RIGHT)
-        moves_RIGHT = tree_RIGHT.return_tree(explore_leafs(tree_RIGHT, depth, snake_RIGHT, board_size,  update_map(board_size, snake_RIGHT)))
-        empty_map = update_map(board_size, snake_RIGHT)
+        moves_RIGHT = tree_RIGHT.return_tree(explore_leafs(tree_RIGHT, depth-1, snake_RIGHT, board_size,  update_map(board_size, snake_RIGHT)))
+        #empty_map = update_map(board_size, snake_RIGHT)
+
 
     # Returns concatenation of all strings of moves
     return moves_UP + moves_DOWN + moves_LEFT + moves_RIGHT
