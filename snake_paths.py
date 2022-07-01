@@ -39,7 +39,7 @@ def main():
     inputs = parse_input("resources/test_data.dat")
     
     # Loops around all test cases read on test_data
-    for i in range(3):
+    for i in range(2):
 
         # Variable used for representing test number at the end of the main routine
         test_count = i + 1
@@ -64,6 +64,7 @@ def main():
 
         # Moves are retrived as a long string, every x (depth) movement a new sequence is created and kept
         string_of_moves = tree_move(board_size, snake, depth)
+        print(string_of_moves)
         move = ""
         list_of_moves = []
 

@@ -63,34 +63,48 @@ class Tree:
 
     # This class stores a move (Can be anything but in this script is used as a string)
     # and also all the leafs, in this case moves that can derived from last one
-    def __init__(self, move):
+    def __init__(self, move, parent):
         self.move  = move
+        self.parent = parent
+        self.history = move
         self.leafs = []
 
     # Every new move in explore_leafs is store as a new tree since tree depth and width depends
     # on script parameters and not a limitation here in the class
     def append_move(self, move):
-        new_leaf = Tree(move)
+        new_leaf = Tree(move, self.move)
+        new_leaf.history = self.history + move
         self.leafs.append(new_leaf)
         return new_leaf
 
     # For debugging reasons this function does the same as return_tree but printing result in
     # standard output
     def show_tree(self, tree):
-        print("First move: " + str(tree.move))
+        print("Move: " + str(tree.move))
         print("Available moves: ")
         for leaf in tree.leafs:
             print(leaf.move, end="")
         print()
 
+    def return_tree_rec(self, tree):
+        path = ""
+        if len(tree.leafs) == 0:
+            print("Historial: " + tree.history)
+            return tree.history
+        else:
+            for leaf in tree.leafs:
+                path = path + tree.return_tree_rec(leaf)
+        return path
+
+
     # This method uses recursion to retrieve 1. move in root -> 2. move in all leafs
     # Since leafs are also trees this will continue untill no more leafs are found
     def return_tree(self, tree):
-        #tree.show_tree(tree)
-        moves = tree.move
+        tree.show_tree(tree)
+        path = ""
         for leaf in tree.leafs:
-            moves = moves + leaf.move + tree.return_tree(leaf)
-        return moves
+            path = path + tree.return_tree_rec(leaf)
+        return path
 
 # --------------------------------------------------------------------------------------------------
 # Function 
@@ -177,29 +191,33 @@ def tree_move(board_size, snake, depth):
     # This 4 ifs are the same, if any move is possible (cell is empty) append that move to 
     # main tree, update snake coordinates and board, and call recursion untill depth is 0
     if [snake[0][0] + UP[0], snake[0][1] + UP[1]] in empty_map:
-        tree_UP  = Tree("U")
+        tree_UP  = Tree("U", "")
         snake_UP = snake_after_move(snake, UP)
         moves_UP = tree_UP.return_tree(explore_leafs(tree_UP, depth-1, snake_UP, board_size, update_map(board_size, snake_UP)))
         #empty_map = update_map(board_size, snake_UP)
 
     if [snake[0][0] + DOWN[0], snake[0][1] + DOWN[1]] in empty_map:
-        tree_DOWN  = Tree("D")
+        tree_DOWN  = Tree("D", "")
         snake_DOWN = snake_after_move(snake, DOWN)
         moves_DOWN = tree_DOWN.return_tree(explore_leafs(tree_DOWN, depth-1, snake_DOWN, board_size,  update_map(board_size, snake_DOWN)))
         #empty_map = update_map(board_size, snake_DOWN)
 
     if [snake[0][0] + LEFT[0], snake[0][1] + LEFT[1]] in empty_map:
-        tree_LEFT  = Tree("L")
+        tree_LEFT  = Tree("L", "")
         snake_LEFT = snake_after_move(snake, LEFT)
         moves_LEFT = tree_LEFT.return_tree(explore_leafs(tree_LEFT, depth-1, snake_LEFT, board_size,  update_map(board_size, snake_LEFT)))
         #empty_map = update_map(board_size, snake_LEFT)
 
     if [snake[0][0] + RIGHT[0], snake[0][1] + RIGHT[1]] in empty_map:
-        tree_RIGHT  = Tree("R")
+        tree_RIGHT  = Tree("R", "")
         snake_RIGHT = snake_after_move(snake, RIGHT)
         moves_RIGHT = tree_RIGHT.return_tree(explore_leafs(tree_RIGHT, depth-1, snake_RIGHT, board_size,  update_map(board_size, snake_RIGHT)))
         #empty_map = update_map(board_size, snake_RIGHT)
 
+    print(moves_UP)
+    print(moves_DOWN)
+    print(moves_LEFT)
+    print(moves_RIGHT)
 
     # Returns concatenation of all strings of moves
     return moves_UP + moves_DOWN + moves_LEFT + moves_RIGHT
